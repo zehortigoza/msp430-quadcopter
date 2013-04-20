@@ -1,17 +1,15 @@
 #include "main.h"
 
-#define COUNTER_TO_5MS 625-1 //625hz = 5ms
+#define COUNTER_TO_5MS 625-1//625hz = 5ms
+#define COUNTER_TO_1MS 125//125hz = 1ms
 
-static char motor = 0;
+static unsigned char motor_index = 0;
 
-static char front_right = 0;//1
-static char front_left = 0;//2
-static char back_right = 0;//3
-static char back_left = 0;//4
+//index 0 = front right, 1 = front left, 2 = back right, 3 = back left
+static int motors_tricks[4];
 
 int motors_init(void)
 {
-    //config timerA
     TACTL = TASSEL_2;//source of timerA = smlck
     TACTL |= ID_3;//divide clock per 8, 1mhz/8 = 125000hz
     TACTL |= MC_1;//up mode
@@ -25,29 +23,49 @@ int motors_init(void)
     return 0;
 }
 
-interrupt(TIMER0_A1_VECTOR) timer_a1_int(void)
+void motors_velocity_set(unsigned char fr, unsigned char fl, unsigned char br, unsigned char bl)
 {
-    P1OUT = 0;
-    //TODO SET PIN DOWN
+    motors_tricks[0] = (COUNTER_TO_1MS * fr / 255) + COUNTER_TO_1MS - 1;
+    motors_tricks[1] = (COUNTER_TO_1MS * fl / 255) + COUNTER_TO_1MS - 1;
+    motors_tricks[2] = (COUNTER_TO_1MS * br / 255) + COUNTER_TO_1MS - 1;
+    motors_tricks[3] = (COUNTER_TO_1MS * bl / 255) + COUNTER_TO_1MS - 1;
+}
+
+static int _power_calc(int count)
+{
+    count = count - COUNTER_TO_1MS + 1;
+    count = 255 * count / 125;
+    return count;
+}
+
+void motors_velocity_get(unsigned char *fr, unsigned char *fl, unsigned char *br, unsigned char *bl)
+{
+    if (fr)
+        *fr = _power_calc(motors_tricks[0]);
+    if (fl)
+        *fl = _power_calc(motors_tricks[1]);
+    if (br)
+        *br = _power_calc(motors_tricks[2]);
+    if (bl)
+        *bl = _power_calc(motors_tricks[3]);
 }
 
 static void _motor_pwm_up(void)
 {
-    unsigned int count = 125;//1ms
-
-    //1ms = min velocity
-    //2ms = max velocity
     //TODO SET PIN UP
-    //TODO realize calc to count
+    TACCR1 = motors_tricks[motor_index];
+}
 
-    TACCR1 = count;
+interrupt(TIMER0_A1_VECTOR) timer_a1_int(void)
+{
+    //TODO SET PIN DOWN
 }
 
 interrupt(TIMER0_A0_VECTOR) timer_a0_int(void)
 {
-    motor++;
     _motor_pwm_up();
-    if(motor == 4)
-        motor = 0;
+    motor_index++;
+    if(motor_index == 4)
+        motor_index = 0;
     TACCR0 = COUNTER_TO_5MS;
 }
