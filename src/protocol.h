@@ -12,6 +12,14 @@ typedef enum
   CALIBRATE = 'c'
 } Protocol_Msg_Type;
 
+typedef enum
+{
+    AXIS_X = 'x',
+    AXIS_Y = 'y',
+    AXIS_Z = 'z',
+    AXIS_ROTATE = 'r'
+} Protocol_Axis;
+
 typedef void (*protocol_msg_callback)(Protocol_Msg_Type type, char request, ...);
 
 void procotol_init(protocol_msg_callback cb);

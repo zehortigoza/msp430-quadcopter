@@ -29,24 +29,20 @@ static void _radio_cb(char *text)
     {
         case MOVE:
         {
-            int x, y, z;//only request
+            int num;//only request
+            Protocol_Axis axis;
 
             pch = strtok(NULL, ";");
             if (!pch || pch[0] == '$')
                 return;
-            x = atoi(pch);
+            axis = pch[0];
 
             pch = strtok(NULL, ";");
             if (!pch || pch[0] == '$')
                 return;
-            y = atoi(pch);
+            num = atoi(pch);
 
-            pch = strtok(NULL, ";");
-            if (!pch || pch[0] == '$')
-                return;
-            z = atoi(pch);
-
-            protocol_msg_func(type, request, x, y, z);
+            protocol_msg_func(type, request, axis, num);
             break;
         }
         case PING:
