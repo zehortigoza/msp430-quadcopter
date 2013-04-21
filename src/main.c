@@ -8,8 +8,7 @@ int main(void)
     BCSCTL1 = CALBC1_8MHZ;
     BCSCTL2 |= DIVS1+DIVS0;//Divider SMCLK per 8, SMLCK = 1Mhz
 
-    //init devices
-    motors_init();
+    agent_init();
 
     _BIS_SR(LPM0_bits + GIE);//enter in lpm0 mode = cpu and mclk off, aclk, smclk and interruption on
 

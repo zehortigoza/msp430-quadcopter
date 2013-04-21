@@ -11,4 +11,6 @@
 #include "radio.h"
 #include "protocol.h"
 
+void agent_init(void);
+
 #endif

@@ -26,7 +26,8 @@ src/motors.h \
 src/radio.c \
 src/radio.h \
 src/protocol.c \
-src/protocol.h
+src/protocol.h \
+src/agent.c
 
 # Use lines like those below to include your own libraries, include files (if you have any).
 # Changing a library won't cause a rebuild - use make clean then make.
