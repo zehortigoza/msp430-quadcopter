@@ -5,7 +5,10 @@
 #include <legacymsp430.h>
 #include <msp430.h>
 #include <string.h>
+#include <stdarg.h>
+#include <stdlib.h>
 #include "motors.h"
 #include "radio.h"
+#include "protocol.h"
 
 #endif
