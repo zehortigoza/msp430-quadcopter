@@ -44,7 +44,7 @@ int radio_send(void)
     return 1;
 }
 
-interrupt(USCIAB0TX_VECTOR) tx_int(void)
+void radio_tx_int(void)
 {
     if (tx_buffer[tx_buffer_index])
     {

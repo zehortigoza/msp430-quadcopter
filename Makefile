@@ -21,12 +21,15 @@ MCU      = msp430g2553
 SOURCES = \
 src/main.c \
 src/main.h \
+src/radio_sensor_shared_interrupt.c \
 src/motors.c \
 src/motors.h \
 src/radio.c \
 src/radio.h \
 src/protocol.c \
 src/protocol.h \
+src/sensor.c \
+src/sensor.h \
 src/agent.c
 
 # Use lines like those below to include your own libraries, include files (if you have any).

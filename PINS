@@ -1,2 +1,11 @@
 pin 3 = rx radio
-pin 4 = tx radio
+pin 4 = tx radio//maybe change to spi
+
+pin 14 = clock sensor
+pin 15 = sda sensor
+pin x = interruption data ready
+
+pin x = motor 1
+pin x = motor 2
+pin x = motor 3
+pin x = motor 4

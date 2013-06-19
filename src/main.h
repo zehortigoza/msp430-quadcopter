@@ -10,6 +10,7 @@
 #include "motors.h"
 #include "radio.h"
 #include "protocol.h"
+#include "sensor.h"
 
 void agent_init(void);
 
