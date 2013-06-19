@@ -15,16 +15,18 @@ void radio_init(radio_data_callback func)
     memset(rx_buffer, 0, MAX_STRING);
     memset(tx_buffer, 0, MAX_STRING);
 
-    P1SEL = BIT1 + BIT2;// P1.1 = RXD, P1.2=TXD
-    P1SEL2 = BIT1 + BIT2;
+    P1SEL = BIT1 + BIT2 + BIT4;// P1.1 = RXD, P1.2=TXD, P1.4=CLK
+    P1SEL2 = BIT1 + BIT2 + BIT4;
 
     //bit rate = 115200bps
+    UCA0CTL0 = UCMSB + UCMST;//msb, master, 8bit, 3-pin SPI
     UCA0CTL1 |= UCSSEL_2;//SMCLK
-    UCA0BR0 = 8;//1mhz/115200 = 8.680555556
+    UCA0BR0 = 1;//1mhz/1=1mhz
     UCA0BR1 = 0;
-    UCA0MCTL = UCBRS1 + UCBRS0;//Modulation UCBRSx = 3 TODO test
+    UCA0MCTL = 0;
     UCA0CTL1 &= ~UCSWRST;//**Initialize USCI state machine**
     IE2 |= UCA0RXIE;//Enable USCI_A0 RX interrupt
+    //select slave, put 0 do cs at xbee
 }
 
 char *radio_tx_buffer_get(void)
