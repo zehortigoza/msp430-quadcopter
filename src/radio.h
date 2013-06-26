@@ -9,4 +9,6 @@ void radio_init(radio_data_callback func);
 int radio_send(void);
 char *radio_tx_buffer_get(void);
 
+void radio_tx_int(void);
+
 #endif

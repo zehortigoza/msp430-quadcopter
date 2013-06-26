@@ -1,2 +1,5 @@
 pin 3 = rx radio
 pin 4 = tx radio
+
+pin 15 = sda sensor
+pin 14 = scl senson
