@@ -85,12 +85,12 @@ int protocol_msg_send(Protocol_Msg_Type type, char request, ...)
         {
             //quad request to cel
             if (request)
-                snprintf(tx_buffer, MAX_STRING, "^;%c;1;2;$", type);
+                snprintf(tx_buffer, MAX_STRING, "^;%c;1;2;$\n", type);
             else
             {
                 int num = va_arg(ap, int);
                 num++;
-                snprintf(tx_buffer, MAX_STRING, "^;%c;0;%d;$", type, num);
+                snprintf(tx_buffer, MAX_STRING, "^;%c;0;%d;$\n", type, num);
             }
             break;
         }
@@ -98,7 +98,7 @@ int protocol_msg_send(Protocol_Msg_Type type, char request, ...)
         case RADIO_LEVEL:
         {
             int num = va_arg(ap, int);//only reply
-            snprintf(tx_buffer, MAX_STRING, "^;%c;0;%d;$", type, num);
+            snprintf(tx_buffer, MAX_STRING, "^;%c;0;%d;$\n", type, num);
             break;
         }
         case GYRO:
@@ -108,14 +108,14 @@ int protocol_msg_send(Protocol_Msg_Type type, char request, ...)
             x = va_arg(ap, int);
             y = va_arg(ap, int);
             z = va_arg(ap, int);
-            snprintf(tx_buffer, MAX_STRING, "^;%c;0;%d;%d;%d;$", type, x, y, z);
+            snprintf(tx_buffer, MAX_STRING, "^;%c;0;%d;%d;%d;$\n", type, x, y, z);
             break;
         }
         case CALIBRATE:
         case MOVE:
         {
             //only reply
-            snprintf(tx_buffer, MAX_STRING, "^;%c;0;$", type);
+            snprintf(tx_buffer, MAX_STRING, "^;%c;0;$\n", type);
             break;
         }
         default:

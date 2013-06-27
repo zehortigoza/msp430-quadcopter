@@ -6,7 +6,7 @@ static char tx_buffer[MAX_STRING];
 static unsigned char tx_buffer_index = 0;
 
 static char rx_buffer[MAX_STRING];
-static unsigned char rx_buffer_index = 0;
+static unsigned char rx_buffer_index = 0;//TODO change to char pointer
 
 void radio_init(radio_data_callback func)
 {
@@ -64,7 +64,7 @@ void radio_tx_int(void)
 interrupt(USCIAB0RX_VECTOR) rx_int(void)
 {
     char c = UCA0RXBUF;
-    if (c)
+    if (c == '\n')
     {
         radio_data_func(rx_buffer);
         rx_buffer_index = 0;
