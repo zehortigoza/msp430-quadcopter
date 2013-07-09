@@ -1,0 +1,43 @@
+sample rate = achar para setar, register 25
+
+GYRO_CONFIG = setar range to gyro - FS_SEL = 1
+ACCEL_CONFIG = setar range de gravidade do accel - AFS_SEL = 1
+FIFO_EN = habilita dados dos sensores serem guardados no buffer fifo
+
+INT_PIN_CFG = config não interessante do pino de interrução
+bit nao interessante I2C _BYPASS_EN
+
+INT_ENABLE = habilita interrações, habilitar DATA_RDY_EN 
+
+INT_STATUS = status de qual interrução estorou, por uma config do INT_PIN_CFG, quando este é lido
+ele "limpa" a interrupção
+
+ACCEL_XOUT_H, ACCEL_XOUT_L, ACCEL_YOUT_H, ACCEL_YOUT_L, ACCEL_ZOUT_H, and ACCEL_ZOUT_L = last accel measure
+** converter raw value para a escala setada no gyro e no accel
+
+TEMP_OUT_H and TEMP_OUT_L = last temp measure
+Temperature in degrees C = (TEMP_OUT Register Value as a signed quantity)/340 + 36.53
+
+GYRO_XOUT_H, GYRO_XOUT_L, GYRO_YOUT_H, GYRO_YOUT_L, GYRO_ZOUT_H, and GYRO_ZOUT_L =  last gyro measure
+** converter raw value para a escala setada no gyro e no accel
+
+PWR_MGMT_1 = remove de sleep mode, configura o clock, cycle = acorda device, faz uma medida e volta a dormir, desativa sensor de temperatura
+
+CYCLE When this bit is set to 1 and SLEEP is disabled, the MPU-60X0 will cycle
+     between sleep mode and waking up to take a single sample of data from
+    active sensors at a rate determined by LP_WAKE_CTRL (register 108).
+
+WHO_AM_I = retorna seu slave address
+
+
+
+
+
+
+
+
+
+
+
+
+

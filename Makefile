@@ -30,6 +30,8 @@ src/protocol.c \
 src/protocol.h \
 src/i2c.c \
 src/i2c.h \
+src/mpu6050.c \
+src/mpu6050.h \
 src/agent.c
 
 # Use lines like those below to include your own libraries, include files (if you have any).

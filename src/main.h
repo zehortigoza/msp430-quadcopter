@@ -11,6 +11,7 @@
 #include "radio.h"
 #include "protocol.h"
 #include "i2c.h"
+#include "mpu6050.h"
 
 void agent_init(void);
 
