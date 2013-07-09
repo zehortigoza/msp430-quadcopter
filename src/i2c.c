@@ -1,5 +1,7 @@
 #include "main.h"
 
+#define I2C_BUFFER_SIZE 32
+
 /**
  * bit0 = busy
  * bit1 = reading(0) or writing(1) a register?
@@ -11,7 +13,7 @@ static char state = 0;
 static i2c_data_read_callback data_read_func;
 static i2c_data_write_callback data_write_func;
 static unsigned char send_register = 0;
-static unsigned char buffer[10];
+static unsigned char buffer[I2C_BUFFER_SIZE];
 static unsigned char *ptr_data;
 static int data_size = 0;
 
@@ -65,6 +67,13 @@ int i2c_reg_read(unsigned char reg, unsigned int size, i2c_data_read_callback fu
     send_register = reg;
 
     return 1;
+}
+
+int i2c_reg_uchar_write(unsigned char reg, unsigned char value, i2c_data_write_callback func)
+{
+    unsigned char bchar[1];
+    bchar[0] = value;
+    return i2c_reg_write(reg, bchar, 1, func);
 }
 
 int i2c_reg_write(unsigned char reg, unsigned char *value, unsigned int size, i2c_data_write_callback func)
