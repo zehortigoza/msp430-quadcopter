@@ -1,6 +1,5 @@
 #include "main.h"
 
-static char _request_data = 0;//gyro = BIT0, ACCELEROMETER = BIT1
 static unsigned char z_value;
 
 /*
@@ -110,18 +109,21 @@ static void _msg_cb(Protocol_Msg_Type type, char request, ...)
         }
         case GYRO:
         {
-            _request_data ^= BIT0;
+            double x, y, z;
+            mpu6050_gyro_get(&x, &y, &z);
+            protocol_msg_send(type, 0, x, y, z);
             break;
         }
         case ACCELEROMETER:
         {
-            _request_data ^= BIT1;
+            double x, y, z;
+            mpu6050_accel_get(&x, &y, &z);
+            protocol_msg_send(type, 0, x, y, z);
             break;
         }
         case CALIBRATE:
         {
-            //TODO calibrate
-            protocol_msg_send(type, 0);
+            mpu6050_calibrate();
             break;
         }
         case RADIO_LEVEL:
@@ -137,6 +139,6 @@ void agent_init(void)
 {
     z_value = 0;
     motors_init();
-    //TODO sensors_init(cb);
     procotol_init(_msg_cb);
+    mpu6050_init();
 }

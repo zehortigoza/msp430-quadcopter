@@ -268,9 +268,7 @@ static char _raw_cb(unsigned char reg, unsigned char *data)
 
         calibrate--;
         if (!calibrate)
-        {
-            //TODO send msg notify that calibrate was finished
-        }
+            protocol_msg_send(CALIBRATE, 0);
     }
     else
     {
@@ -280,7 +278,7 @@ static char _raw_cb(unsigned char reg, unsigned char *data)
     _scale_calc(&raw);
 
     //TODO transform to pitch, yaw and row
-    return 0;
+    return 0;//release i2c bus
 }
 
 static char _status_cb(unsigned char reg, unsigned char *data)
@@ -299,11 +297,32 @@ static char _status_cb(unsigned char reg, unsigned char *data)
 //TODO interruption cb
 static void _int(void)
 {
+    i2c_bus_init(MPU6050_ADDR);
     i2c_reg_read(REG_INT_STATUS, 1, _status_cb);
 }
 
 void mpu6050_calibrate(void)
 {
-    init_ret = SAMPLES_TO_CALIBRATE;
+    calibrate = SAMPLES_TO_CALIBRATE;
     raw_offset.value.temperature = -1;//indicate that is first run of calibrate
+}
+
+void mpu6050_gyro_get(double *x, double *y, double *z)
+{
+    if (x)
+        *x = sensor_data.x_gyro;
+    if (y)
+        *y = sensor_data.y_gyro;
+    if (z)
+        *z = sensor_data.z_gyro;
+}
+
+void mpu6050_accel_get(double *x, double *y, double *z)
+{
+    if (x)
+        *x = sensor_data.x_accel;
+    if (y)
+        *y = sensor_data.y_accel;
+    if (z)
+        *z = sensor_data.z_accel;
 }

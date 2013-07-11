@@ -104,11 +104,11 @@ int protocol_msg_send(Protocol_Msg_Type type, char request, ...)
         case GYRO:
         case ACCELEROMETER:
         {
-            int x, y, z;//only reply
-            x = va_arg(ap, int);
-            y = va_arg(ap, int);
-            z = va_arg(ap, int);
-            snprintf(tx_buffer, MAX_STRING, "^;%c;0;%d;%d;%d;$\n", type, x, y, z);
+            double x, y, z;//only reply
+            x = va_arg(ap, double);
+            y = va_arg(ap, double);
+            z = va_arg(ap, double);
+            snprintf(tx_buffer, MAX_STRING, "^;%c;0;%.3f;%.3f;%.3f;$\n", type, x, y, z);
             break;
         }
         case CALIBRATE:
