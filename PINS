@@ -1,5 +1,36 @@
-pin 3 = rx radio
-pin 4 = tx radio
+#MSP430 pins
 
-pin 15 = sda sensor
-pin 14 = scl senson
+SPI radio
+pin 3 = Master In - rx radio
+pin 4 = Master Out - tx radio
+pin 6 = clock
+
+I2C gyro/accel
+pin 15 = data = sda sensor
+pin 14 = clock = scl senson
+pin x = interruption
+
+Motors
+pin x = motor front left
+pin x = motor front right
+pin x = motor back left
+pin x = motor back right
+
+pin 1 = DVCC
+pin 20 = DVSS
+
+#xbee pins
+
+#spi
+pin 18 = spi clock
+pin 17 = spi sel, = ground
+pin 11 = spi MOSI
+pin 4 = spi MISO
+pin 2 = low
+
+#uart
+pin 2 = dout msp<-xbee
+pin 3 = din msp->xbee
+
+pin 1 = vcc
+pin 10 = gnd
