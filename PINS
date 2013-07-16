@@ -1,9 +1,8 @@
 #MSP430 pins
 
 SPI radio
-pin 3 = Master In - rx radio
-pin 4 = Master Out - tx radio
-pin 6 = clock
+pin 3 = P1.1 = Master In - rx radio
+pin 4 = P1.2 = Master Out - tx radio
 
 I2C gyro/accel
 pin 15 = data = sda sensor
@@ -20,13 +19,6 @@ pin 1 = DVCC
 pin 20 = DVSS
 
 #xbee pins
-
-#spi
-pin 18 = spi clock
-pin 17 = spi sel, = ground
-pin 11 = spi MOSI
-pin 4 = spi MISO
-pin 2 = low
 
 #uart
 pin 2 = dout msp<-xbee

@@ -15,18 +15,15 @@ void radio_init(radio_data_callback func)
     memset(rx_buffer, 0, MAX_STRING);
     memset(tx_buffer, 0, MAX_STRING);
 
-    P1SEL = BIT1 + BIT2 + BIT4;// P1.1 = RXD, P1.2=TXD, P1.4=CLK
-    P1SEL2 = BIT1 + BIT2 + BIT4;
+    P1SEL = BIT1 + BIT2;// P1.1 = RXD, P1.2=TXD
+    P1SEL2 = BIT1 + BIT2;
 
-    //bit rate = 115200bps
-    UCA0CTL0 = UCMSB + UCMST;//msb, master, 8bit, 3-pin SPI
-    UCA0CTL1 |= UCSSEL_2;//SMCLK
-    UCA0BR0 = 1;//1mhz/1=1mhz
-    UCA0BR1 = 0;
-    UCA0MCTL = 0;
-    UCA0CTL1 &= ~UCSWRST;//**Initialize USCI state machine**
-    IE2 |= UCA0RXIE;//Enable USCI_A0 RX interrupt
-    //select slave, put 0 do cs at xbee
+    UCA0CTL1 |= UCSSEL_2;//smclk
+    UCA0BR0 = 104;//9600
+    UCA0BR1 = 0;//9600
+    UCA0MCTL = UCBRS0;//modulation
+    UCA0CTL1 &= ~UCSWRST;//initialize USCI state machine
+    IE2 |= UCA0RXIE;//enable rx interrupt
 }
 
 char *radio_tx_buffer_get(void)
@@ -55,6 +52,7 @@ void radio_tx_int(void)
     }
     else
     {
+        //end of transmition
         IE2 &= ~UCA0TXIE;
         memset(tx_buffer, 0, MAX_STRING);
         tx_buffer_index = 0;
