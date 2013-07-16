@@ -2,11 +2,11 @@
 
 static radio_data_callback radio_data_func = NULL;
 
-static char tx_buffer[MAX_STRING];
-static unsigned char tx_buffer_index = 0;
+static char tx_buffer[MAX_STRING+1];
+static char *tx_ptr = 0;
 
 static char rx_buffer[MAX_STRING];
-static unsigned char rx_buffer_index = 0;//TODO change to char pointer
+static char *rx_ptr = rx_buffer;
 
 void radio_init(radio_data_callback func)
 {
@@ -31,46 +31,48 @@ char *radio_tx_buffer_get(void)
     return tx_buffer;
 }
 
-int radio_send(void)
+int radio_send(char *txt, int size)
 {
-    if (tx_buffer_index)
+    if (tx_ptr || size > sizeof(tx_buffer))
         return 0;
 
+    memcpy(tx_buffer, txt, size);
+    tx_buffer[size] = 0;
+
     IE2 |= UCA0TXIE;
-    UCA0TXBUF = tx_buffer[tx_buffer_index];
-    tx_buffer_index++;
+    UCA0TXBUF = tx_buffer[0];
+    tx_ptr = tx_buffer + 1;
 
     return 1;
 }
 
 void radio_tx_int(void)
 {
-    if (tx_buffer[tx_buffer_index])
+    if (tx_ptr)
     {
-        UCA0TXBUF = tx_buffer[tx_buffer_index];
-        tx_buffer_index++;
+        UCA0TXBUF = *tx_ptr;
+        tx_ptr++;
     }
     else
     {
         //end of transmition
         IE2 &= ~UCA0TXIE;
-        memset(tx_buffer, 0, MAX_STRING);
-        tx_buffer_index = 0;
+        tx_ptr = 0;
     }
 }
 
 interrupt(USCIAB0RX_VECTOR) rx_int(void)
 {
     char c = UCA0RXBUF;
-    if (c == '\n')
+    if (c == '\n' || (rx_ptr == rx_buffer + sizeof(rx_buffer)))
     {
         radio_data_func(rx_buffer);
-        rx_buffer_index = 0;
+        rx_ptr = rx_buffer;
         memset(rx_buffer, 0, MAX_STRING);
     }
     else
     {
-        rx_buffer[rx_buffer_index] = c;
-        rx_buffer_index++;
+        *rx_ptr = c;
+        rx_ptr++;
     }
 }

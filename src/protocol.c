@@ -75,7 +75,7 @@ void procotol_init(protocol_msg_callback cb)
 
 int protocol_msg_send(Protocol_Msg_Type type, char request, ...)
 {
-    char *tx_buffer = radio_tx_buffer_get();
+    char tx_buffer[MAX_STRING];
     va_list ap;
 
     va_start(ap, request);
@@ -126,5 +126,5 @@ int protocol_msg_send(Protocol_Msg_Type type, char request, ...)
     }
 
     va_end(ap);
-    return radio_send();
+    return radio_send(tx_buffer, strlen(tx_buffer));
 }

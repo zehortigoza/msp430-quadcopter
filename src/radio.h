@@ -6,8 +6,7 @@
 typedef void (*radio_data_callback)(char *text);
 
 void radio_init(radio_data_callback func);
-int radio_send(void);
-char *radio_tx_buffer_get(void);
+int radio_send(char *txt, int size);
 
 void radio_tx_int(void);
 
