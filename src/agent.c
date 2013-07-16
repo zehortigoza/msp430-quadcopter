@@ -2,6 +2,25 @@
 
 static unsigned char z_value;
 
+#define COUNTER_500MS 62500
+
+static void _timer_b_config(void)
+{
+    //config timer B
+    TA1CTL = TASSEL_2;//source of timerB = smlck
+    TA1CTL |= ID_3;//divide clock per 8, 1mhz/8 = 125000hz = 125k
+    TA1CTL |= MC_1;//Up mode: the timer counts up to TBCL0
+
+    TA1CCTL0 = CCIE;//enable interruption compare 1
+    TA1CCR0 = COUNTER_500MS;
+}
+
+static void _timer_b_reset(void)
+{
+    TA1CTL = TACLR;
+    _timer_b_config();
+}
+
 /*
  BL\        /FL
     \      /
@@ -25,6 +44,8 @@ static void _msg_cb(Protocol_Msg_Type type, char request, ...)
         {
             Protocol_Axis axis;
             int num;
+
+            _timer_b_reset();
 
             axis = va_arg(ap, Protocol_Axis);
             num = va_arg(ap, int);
@@ -141,4 +162,13 @@ void agent_init(void)
     motors_init();
     procotol_init(_msg_cb);
     mpu6050_init();
+    _timer_b_config();
+}
+
+interrupt(TIMER1_A0_VECTOR) timer_b0_int(void)
+{
+    //remove movements
+    motors_velocity_set(z_value, z_value, z_value, z_value);
+
+    TA1CCR0 = COUNTER_500MS;
 }
