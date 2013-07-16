@@ -1,7 +1,8 @@
 #include "main.h"
 
+//page 366 *The number of timer counts in the period is TACCR0+1
 #define COUNTER_TO_5MS 625-1//625hz = 5ms
-#define COUNTER_TO_1MS 125//125hz = 1ms
+#define COUNTER_TO_1MS 125-1//125hz = 1ms
 
 static unsigned char motor_index = 0;
 
