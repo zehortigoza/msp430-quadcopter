@@ -61,134 +61,112 @@ typedef struct _mpu6050_data
 } mpu6050_data;
 
 static mpu6050_raw raw_offset;
-static char init_ret;
 static char calibrate;
 static mpu6050_data sensor_data;
 
-static char _who_am_i_cb(unsigned char reg, unsigned char *data)
+static char _int_enable_cb(unsigned char reg)
 {
-    _BIC_SR(LPM0_bits);
-    if (data[0] == MPU6050_ADDR)
-        return 1;
+    if (reg == REG_INT_ENABLE)
+    {
+        return 0;//last message, send 0 to shutdown bus
+    }
 
-    init_ret = 0;
-    return 0;
-}
-
-static char _pw_mgmt_cb(unsigned char reg)
-{
-    _BIC_SR(LPM0_bits);
-    if (reg == REG_PWR_MGMT_1)
-        return 1;
-
-    init_ret = 0;
-    return 0;
-}
-
-static char _config_cb(unsigned char reg)
-{
-    _BIC_SR(LPM0_bits);
-    if (reg == REG_CONFIG)
-        return 1;
-
-    init_ret = 0;
-    return 0;
-}
-
-static char _sampler_divider_cb(unsigned char reg)
-{
-    _BIC_SR(LPM0_bits);
-    if (reg == REG_SMPRT_DIV)
-        return 1;
-
-    init_ret = 0;
-    return 0;
-}
-
-static char _gyro_config_cb(unsigned char reg)
-{
-    _BIC_SR(LPM0_bits);
-    if (reg == REG_GYRO_CONFIG)
-        return 1;
-
-    init_ret = 0;
+    //TODO turn some led on to notify error
     return 0;
 }
 
 static char _accel_config_cb(unsigned char reg)
 {
-    _BIC_SR(LPM0_bits);
     if (reg == REG_ACCEL_CONFIG)
+    {
+        //enable data ready interruption
+        i2c_reg_uchar_write(REG_INT_ENABLE, BIT0, _int_enable_cb);
         return 1;
+    }
 
-    init_ret = 0;
+    //TODO turn some led on to notify error
     return 0;
 }
 
-static char _int_enable_cb(unsigned char reg)
+static char _gyro_config_cb(unsigned char reg)
 {
-    _BIC_SR(LPM0_bits);
-    if (reg == REG_INT_ENABLE)
-        return 0;//last message, send 0 to shutdown bus
+    if (reg == REG_GYRO_CONFIG)
+    {
+        //acell Full Scale Range = +-4g
+        i2c_reg_uchar_write(REG_ACCEL_CONFIG, BIT3, _accel_config_cb);
+        return 1;
+    }
 
-    init_ret = 0;
+    //TODO turn some led on to notify error
+    return 0;
+}
+
+static char _sampler_divider_cb(unsigned char reg)
+{
+    if (reg == REG_SMPRT_DIV)
+    {
+        //gyro Full Scale Range = +-500 º/s
+        i2c_reg_uchar_write(REG_GYRO_CONFIG, BIT3, _gyro_config_cb);
+        return 1;
+    }
+
+    //TODO turn some led on to notify error
+    return 0;
+}
+
+static char _config_cb(unsigned char reg)
+{
+    if (reg == REG_CONFIG)
+    {
+        //divider = 4+1 = 5; 1k/5=200hz
+        i2c_reg_uchar_write(REG_SMPRT_DIV, 4, _sampler_divider_cb);
+        return 1;
+    }
+
+    //TODO turn some led on to notify error
+    return 0;
+}
+
+static char _pw_mgmt_cb(unsigned char reg)
+{
+    if (reg == REG_PWR_MGMT_1)
+    {
+        //set Gyroscope Output Rate = 1k and config the low pass filter.
+        i2c_reg_uchar_write(REG_CONFIG, BIT0, _config_cb);
+        return 1;
+    }
+
+    //TODO turn some led on to notify error
+    return 0;
+}
+
+static char _who_am_i_cb(unsigned char reg, unsigned char *data)
+{
+    if (data[0] == MPU6050_ADDR)
+    {
+        //get out of sleep
+        i2c_reg_uchar_write(REG_PWR_MGMT_1, BIT6, _pw_mgmt_cb);
+        return 1;
+    }
+
+    //TODO turn some led on to notify error
     return 0;
 }
 
 int mpu6050_init(void)
 {
-    init_ret = 1;
     memset(&raw_offset, 0, sizeof(raw_offset));
     i2c_bus_init(MPU6050_ADDR);
 
     i2c_reg_read(REG_WHO_AM_I, 1, _who_am_i_cb);
-    __bis_SR_register(CPUOFF + GIE);
-    if (!init_ret)
-        return -1;
 
-    //get out of sleep
-    i2c_reg_uchar_write(REG_PWR_MGMT_1, BIT6, _pw_mgmt_cb);
-    __bis_SR_register(CPUOFF + GIE);
-    if (!init_ret)
-        return -2;
-
-    //set Gyroscope Output Rate = 1k and config the low pass filter.
-    i2c_reg_uchar_write(REG_CONFIG, BIT0, _config_cb);
-    __bis_SR_register(CPUOFF + GIE);
-    if (!init_ret)
-        return -3;
-
-    //divider = 4+1 = 5; 1k/5=200hz
-    i2c_reg_uchar_write(REG_SMPRT_DIV, 4, _sampler_divider_cb);
-    __bis_SR_register(CPUOFF + GIE);
-    if (!init_ret)
-        return -4;
-
-    //gyro Full Scale Range = +-500 º/s
-    i2c_reg_uchar_write(REG_GYRO_CONFIG, BIT3, _gyro_config_cb);
-    __bis_SR_register(CPUOFF + GIE);
-    if (!init_ret)
-        return -5;
-
-    //acell Full Scale Range = +-4g
-    i2c_reg_uchar_write(REG_ACCEL_CONFIG, BIT3, _accel_config_cb);
-    __bis_SR_register(CPUOFF + GIE);
-    if (!init_ret)
-        return -5;
-
-    //enable data ready interruption
-    i2c_reg_uchar_write(REG_INT_ENABLE, BIT0, _int_enable_cb);
-    __bis_SR_register(CPUOFF + GIE);
-    if (!init_ret)
-        return -6;
-
-    //P2.5
+    //config data ready interruption
+    P1DIR |= BIT5;//input
     P2IE |=  BIT5;//enable interruption
     P2IES &= ~BIT5;//0 = low to high | 1 = high to low
     P2IFG &= ~BIT5;//clean int
 
-    init_ret = 0;
-    return 1;
+    return 0;
 }
 
 static inline void _swap(unsigned char *h, unsigned char *l)

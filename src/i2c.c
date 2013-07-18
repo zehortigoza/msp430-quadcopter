@@ -114,8 +114,9 @@ void i2c_rx_tx_int(void)
         {
             char ret;
             UCB0CTL1 |= UCTXSTP;
-            ret = data_write_func(send_register);
             while (UCB0CTL1 & UCTXSTP);
+            state = BIT4;
+            ret = data_write_func(send_register);
             IFG2 &= ~UCB0TXIFG;
             if (!ret)
                 _bus_shutdown();
@@ -123,7 +124,7 @@ void i2c_rx_tx_int(void)
     }
     else//read mode
     {
-        if ((state & BIT3) != BIT3) //connection not restated
+        if ((state & BIT3) != BIT3) //connection not restarted
         {
             UCB0CTL1 |= UCTXSTP;
             while (UCB0CTL1 & UCTXSTP);
@@ -140,8 +141,9 @@ void i2c_rx_tx_int(void)
         {
             char ret;
             UCB0CTL1 |= UCTXSTP;
-            ret = data_read_func(send_register, buffer);
             while (UCB0CTL1 & UCTXSTP);
+            state = BIT4;
+            ret = data_read_func(send_register, buffer);
             if (!ret)
                 _bus_shutdown();
         }
