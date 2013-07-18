@@ -1,13 +1,13 @@
 #MSP430 pins
 
-SPI radio
+uart radio
 pin 3 = P1.1 = Master In - rx radio
 pin 4 = P1.2 = Master Out - tx radio
 
 I2C gyro/accel
-pin 15 = data = sda sensor
-pin 14 = clock = scl senson
-pin x = interruption
+pin 15 = P1.7 = data = sda sensor
+pin 14 = P1.6 = clock = scl senson
+pin 13 = P2.5 = interruption
 
 Motors
 pin x = motor front left
@@ -17,6 +17,8 @@ pin x = motor back right
 
 pin 1 = DVCC
 pin 20 = DVSS
+
+reset pin to vcc with a resistor
 
 #xbee pins
 
