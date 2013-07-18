@@ -182,7 +182,10 @@ int mpu6050_init(void)
     if (!init_ret)
         return -6;
 
-    //TODO config interruption
+    //P2.5
+    P2IE |=  BIT5;//enable interruption
+    P2IES &= ~BIT5;//0 = low to high | 1 = high to low
+    P2IFG &= ~BIT5;//clean int
 
     init_ret = 0;
     return 1;
@@ -294,11 +297,11 @@ static char _status_cb(unsigned char reg, unsigned char *data)
     return 1;
 }
 
-//TODO interruption cb
-static void _int(void)
+interrupt(PORT2_VECTOR) mpu_int(void)
 {
     i2c_bus_init(MPU6050_ADDR);
     i2c_reg_read(REG_INT_STATUS, 1, _status_cb);
+    P2IFG &= ~BIT5;//clean interruption flag
 }
 
 void mpu6050_calibrate(void)
