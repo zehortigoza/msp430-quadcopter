@@ -145,7 +145,7 @@ static char _who_am_i_cb(unsigned char reg, unsigned char *data)
     if (data[0] == MPU6050_ADDR)
     {
         //get out of sleep
-        i2c_reg_uchar_write(REG_PWR_MGMT_1, BIT6, _pw_mgmt_cb);
+        i2c_reg_uchar_write(REG_PWR_MGMT_1, 0, _pw_mgmt_cb);
         return 1;
     }
 
