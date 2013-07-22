@@ -3,7 +3,7 @@
 static radio_data_callback radio_data_func = NULL;
 
 static char tx_buffer[MAX_STRING+1];
-static char *tx_ptr = 0;
+static char *tx_ptr = NULL;
 
 static char rx_buffer[MAX_STRING];
 static char *rx_ptr = rx_buffer;
@@ -23,23 +23,16 @@ void radio_init(radio_data_callback func)
     UCA0BR1 = 0;//9600
     UCA0MCTL = UCBRS0;//modulation
     UCA0CTL1 &= ~UCSWRST;//initialize USCI state machine
-    IE2 |= UCA0RXIE;//enable rx interrupt
+    IE2 |= UCA0RXIE + UCA0TXIE;//enable rx interrupt
 }
 
-char *radio_tx_buffer_get(void)
+int radio_send(char *txt)
 {
-    return tx_buffer;
-}
-
-int radio_send(char *txt, int size)
-{
-    if (tx_ptr || size > sizeof(tx_buffer))
+    if (tx_ptr || strlen(txt) > MAX_STRING)
         return 0;
 
-    memcpy(tx_buffer, txt, size);
-    tx_buffer[size] = 0;
+    sprintf(tx_buffer, "%s", txt);
 
-    IE2 |= UCA0TXIE;
     UCA0TXBUF = tx_buffer[0];
     tx_ptr = tx_buffer + 1;
 
@@ -48,7 +41,7 @@ int radio_send(char *txt, int size)
 
 void radio_tx_int(void)
 {
-    if (tx_ptr)
+    if (*tx_ptr)
     {
         UCA0TXBUF = *tx_ptr;
         tx_ptr++;
@@ -56,8 +49,8 @@ void radio_tx_int(void)
     else
     {
         //end of transmition
-        IE2 &= ~UCA0TXIE;
-        tx_ptr = 0;
+        tx_ptr = NULL;
+        IFG2 &= ~UCA0TXIFG;
     }
 }
 
