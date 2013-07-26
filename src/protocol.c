@@ -64,6 +64,10 @@ static void _radio_cb(char *text)
             protocol_msg_func(type, request);
             break;
         }
+        default:
+        {
+            break;
+        }
     }
 }
 
@@ -115,6 +119,12 @@ int protocol_msg_send(Protocol_Msg_Type type, char request, ...)
         {
             //only reply
             sprintf(tx_buffer, "^;%c;0;$\n", type);
+            break;
+        }
+        case DEBUG:
+        {
+            const char *txt = va_arg(ap, char*);
+            sprintf(tx_buffer, "^;d;1;%s;$\n", txt);
             break;
         }
         default:

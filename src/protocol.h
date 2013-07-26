@@ -9,7 +9,8 @@ typedef enum
   MOVE = 'm',
   GYRO = 'g',
   ACCELEROMETER = 'a',
-  CALIBRATE = 'c'
+  CALIBRATE = 'c',
+  DEBUG = 'd'
 } Protocol_Msg_Type;
 
 typedef enum

@@ -1,8 +1,9 @@
 #include "main.h"
 
-static unsigned char z_value;
-
 #define COUNTER_500MS 62500
+
+static unsigned char z_value;
+static int timer = 0;
 
 static void _timer_b_config(void)
 {
@@ -130,14 +131,14 @@ static void _msg_cb(Protocol_Msg_Type type, char request, ...)
         }
         case GYRO:
         {
-            double x, y, z;
+            float x, y, z;
             mpu6050_gyro_get(&x, &y, &z);
             protocol_msg_send(type, 0, x, y, z);
             break;
         }
         case ACCELEROMETER:
         {
-            double x, y, z;
+            float x, y, z;
             mpu6050_accel_get(&x, &y, &z);
             protocol_msg_send(type, 0, x, y, z);
             break;
@@ -150,6 +151,10 @@ static void _msg_cb(Protocol_Msg_Type type, char request, ...)
         case RADIO_LEVEL:
         {
             //TODO send at comand to xbee to get radio level
+            break;
+        }
+        default:
+        {
             break;
         }
     }
@@ -167,8 +172,11 @@ void agent_init(void)
 
 interrupt(TIMER1_A0_VECTOR) timer_b0_int(void)
 {
-    //remove movements
-    motors_velocity_set(z_value, z_value, z_value, z_value);
+    if (timer == 10)
+        mpu6050_calibrate();
+    timer++;
 
+    //remove moviments
+    motors_velocity_set(z_value, z_value, z_value, z_value);
     TA1CCR0 = COUNTER_500MS;
 }

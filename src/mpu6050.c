@@ -51,118 +51,76 @@ typedef union _mpu6050_raw
 
 typedef struct _mpu6050_data
 {
-    double x_accel;
-    double y_accel;
-    double z_accel;
-    double t;
-    double x_gyro;
-    double y_gyro;
-    double z_gyro;
+    float x_accel;
+    float y_accel;
+    float z_accel;
+    float x_gyro;
+    float y_gyro;
+    float z_gyro;
 } mpu6050_data;
 
 static mpu6050_raw raw_offset;
-static char calibrate;
+static short calibrate;
 static mpu6050_data sensor_data;
 
-static char _int_enable_cb(unsigned char reg)
+static void _int_enable_cb(unsigned char reg)
 {
-    if (reg == REG_INT_ENABLE)
-    {
-        return 0;//last message, send 0 to shutdown bus
-    }
-
-    //TODO turn some led on to notify error
-    return 0;
+    //empty
 }
 
-static char _accel_config_cb(unsigned char reg)
+static void _accel_config_cb(unsigned char reg)
 {
-    if (reg == REG_ACCEL_CONFIG)
-    {
-        //enable data ready interruption
-        i2c_reg_uchar_write(REG_INT_ENABLE, BIT0, _int_enable_cb);
-        return 1;
-    }
-
-    //TODO turn some led on to notify error
-    return 0;
+    i2c_bus_init(MPU6050_ADDR);
+    //enable data ready interruption
+    i2c_reg_uchar_write(REG_INT_ENABLE, BIT0, _int_enable_cb);
 }
 
-static char _gyro_config_cb(unsigned char reg)
+static void _gyro_config_cb(unsigned char reg)
 {
-    if (reg == REG_GYRO_CONFIG)
-    {
-        //acell Full Scale Range = +-4g
-        i2c_reg_uchar_write(REG_ACCEL_CONFIG, BIT3, _accel_config_cb);
-        return 1;
-    }
-
-    //TODO turn some led on to notify error
-    return 0;
+    i2c_bus_init(MPU6050_ADDR);
+    //acell Full Scale Range = +-4g
+    i2c_reg_uchar_write(REG_ACCEL_CONFIG, BIT3, _accel_config_cb);
 }
 
-static char _sampler_divider_cb(unsigned char reg)
+static void _sampler_divider_cb(unsigned char reg)
 {
-    if (reg == REG_SMPRT_DIV)
-    {
-        //gyro Full Scale Range = +-500 º/s
-        i2c_reg_uchar_write(REG_GYRO_CONFIG, BIT3, _gyro_config_cb);
-        return 1;
-    }
-
-    //TODO turn some led on to notify error
-    return 0;
+    i2c_bus_init(MPU6050_ADDR);
+    //gyro Full Scale Range = +-500 º/s
+    i2c_reg_uchar_write(REG_GYRO_CONFIG, BIT3, _gyro_config_cb);
 }
 
-static char _config_cb(unsigned char reg)
+static void _config_cb(unsigned char reg)
 {
-    if (reg == REG_CONFIG)
-    {
-        //divider = 4+1 = 5; 1k/5=200hz
-        i2c_reg_uchar_write(REG_SMPRT_DIV, 4, _sampler_divider_cb);
-        return 1;
-    }
-
-    //TODO turn some led on to notify error
-    return 0;
+    i2c_bus_init(MPU6050_ADDR);
+    //divider = 4+1 = 5; 1k/5=200hz
+    i2c_reg_uchar_write(REG_SMPRT_DIV, 4, _sampler_divider_cb);
 }
 
-static char _pw_mgmt_cb(unsigned char reg)
+static void _pw_mgmt_cb(unsigned char reg)
 {
-    if (reg == REG_PWR_MGMT_1)
-    {
-        //set Gyroscope Output Rate = 1k and config the low pass filter.
-        i2c_reg_uchar_write(REG_CONFIG, BIT0, _config_cb);
-        return 1;
-    }
-
-    //TODO turn some led on to notify error
-    return 0;
+    i2c_bus_init(MPU6050_ADDR);
+    //set Gyroscope Output Rate = 1k and config the low pass filter.
+    i2c_reg_uchar_write(REG_CONFIG, BIT0, _config_cb);
 }
 
-static char _who_am_i_cb(unsigned char reg, unsigned char *data)
+static void _who_am_i_cb(unsigned char reg, unsigned char *data)
 {
-    if (data[0] == MPU6050_ADDR)
-    {
-        //get out of sleep
-        i2c_reg_uchar_write(REG_PWR_MGMT_1, 0, _pw_mgmt_cb);
-        return 1;
-    }
-
-    //TODO turn some led on to notify error
-    return 0;
+    if (data[0] != MPU6050_ADDR)
+        return;
+    i2c_bus_init(MPU6050_ADDR);
+    //get out of sleep
+    i2c_reg_uchar_write(REG_PWR_MGMT_1, 0, _pw_mgmt_cb);
 }
 
 int mpu6050_init(void)
 {
     memset(&raw_offset, 0, sizeof(raw_offset));
     i2c_bus_init(MPU6050_ADDR);
-
     i2c_reg_read(REG_WHO_AM_I, 1, _who_am_i_cb);
 
     //config data ready interruption
     P1DIR |= BIT5;//input
-    P2IE |=  BIT5;//enable interruption
+    P2IE |= BIT5;//enable interruption
     P2IES &= ~BIT5;//0 = low to high | 1 = high to low
     P2IFG &= ~BIT5;//clean int
 
@@ -208,17 +166,11 @@ static void _scale_calc(mpu6050_raw *raw)
     sensor_data.x_gyro = raw->value.x_gyro / GYRO_SCALE;
     sensor_data.y_gyro = raw->value.y_gyro / GYRO_SCALE;
     sensor_data.z_gyro = raw->value.z_gyro / GYRO_SCALE;
-
-    sensor_data.t = (raw->value.temperature / 340.0) + 36.53;
-
 }
 
-static char _raw_cb(unsigned char reg, unsigned char *data)
+static void _raw_cb(unsigned char reg, unsigned char *data)
 {
     static mpu6050_raw raw;
-
-    if (reg != REG_ACCEL_XOUT_H)
-        return 0;
 
     memcpy(&raw, data, sizeof(raw));
     _raw_swap(&raw);
@@ -259,20 +211,15 @@ static char _raw_cb(unsigned char reg, unsigned char *data)
     _scale_calc(&raw);
 
     //TODO transform to pitch, yaw and row
-    return 0;//release i2c bus
 }
 
-static char _status_cb(unsigned char reg, unsigned char *data)
+static void _status_cb(unsigned char reg, unsigned char *data)
 {
-    if (reg != REG_INT_STATUS)
-        return 0;
-
-    if ((data[0] & BIT0) != BIT0)
-        return 0;
-
-    i2c_reg_read(REG_ACCEL_XOUT_H, 14, _raw_cb);
-
-    return 1;
+   if (data[0] & BIT0)
+   {
+       i2c_bus_init(MPU6050_ADDR);
+       i2c_reg_read(REG_ACCEL_XOUT_H, 14, _raw_cb);
+   }
 }
 
 interrupt(PORT2_VECTOR) mpu_int(void)
@@ -288,7 +235,7 @@ void mpu6050_calibrate(void)
     raw_offset.value.temperature = -1;//indicate that is first run of calibrate
 }
 
-void mpu6050_gyro_get(double *x, double *y, double *z)
+void mpu6050_gyro_get(float *x, float *y, float *z)
 {
     if (x)
         *x = sensor_data.x_gyro;
@@ -298,7 +245,7 @@ void mpu6050_gyro_get(double *x, double *y, double *z)
         *z = sensor_data.z_gyro;
 }
 
-void mpu6050_accel_get(double *x, double *y, double *z)
+void mpu6050_accel_get(float *x, float *y, float *z)
 {
     if (x)
         *x = sensor_data.x_accel;
