@@ -4,6 +4,7 @@ static radio_data_callback radio_data_func = NULL;
 
 static char tx_buffer[MAX_STRING+1];
 static char *tx_ptr = NULL;
+static char *tx_next = NULL;
 
 static char rx_buffer[MAX_STRING];
 static char *rx_ptr = rx_buffer;
@@ -28,8 +29,14 @@ void radio_init(radio_data_callback func)
 
 int radio_send(char *txt)
 {
-    if (tx_ptr || strlen(txt) > MAX_STRING)
+    if (strlen(txt) > MAX_STRING)
         return 0;
+    if (tx_ptr)
+    {
+        if (tx_next)
+            return 0;
+        tx_next = strdup(txt);
+    }
 
     sprintf(tx_buffer, "%s", txt);
 
@@ -49,8 +56,19 @@ void radio_tx_int(void)
     else
     {
         //end of transmition
-        tx_ptr = NULL;
-        IFG2 &= ~UCA0TXIFG;
+        if (tx_next)
+        {
+            sprintf(tx_buffer, "%s", tx_next);
+            free(tx_next);
+            tx_next = NULL;
+            UCA0TXBUF = tx_buffer[0];
+            tx_ptr = tx_buffer + 1;
+        }
+        else
+        {
+            tx_ptr = NULL;
+            IFG2 &= ~UCA0TXIFG;
+        }
     }
 }
 

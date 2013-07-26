@@ -1,7 +1,7 @@
 #ifndef RADIO_H
 #define RADIO_H
 
-#define MAX_STRING 100
+#define MAX_STRING 50
 
 typedef void (*radio_data_callback)(char *text);
 
