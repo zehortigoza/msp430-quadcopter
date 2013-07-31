@@ -10,10 +10,10 @@ pin 14 = P1.6 = clock = scl senson
 pin 13 = P2.5 = interruption
 
 Motors
-pin x = motor front left
 pin x = motor front right
-pin x = motor back left
+pin x = motor front left
 pin x = motor back right
+pin x = motor back left
 
 pin 1 = DVCC
 pin 20 = DVSS

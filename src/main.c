@@ -6,7 +6,7 @@ int main(void)
 
     DCOCTL = CALDCO_8MHZ;//MCLK = 8mhz
     BCSCTL1 = CALBC1_8MHZ;
-    BCSCTL2 |= DIVS1+DIVS0;//Divider SMCLK per 8, SMLCK = 1Mhz
+    BCSCTL2 = DIVS_3;//Divider SMCLK per 8, SMLCK = 1Mhz
 
     agent_init();
 

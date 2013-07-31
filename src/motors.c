@@ -1,42 +1,105 @@
 #include "main.h"
 
 //page 366 *The number of timer counts in the period is TACCR0+1
-#define COUNTER_TO_5MS 625-1//625hz = 5ms
-#define COUNTER_TO_1MS 125-1//125hz = 1ms
+#define COUNTER_TO_2MS 250-1
+#define COUNTER_TO_4MS 500-1
+
+#define COUNTER_TO_1MS_ 125
 
 static unsigned char motor_index = 0;
 
 //index 0 = front right, 1 = front left, 2 = back right, 3 = back left
-static int motors_tricks[4];
+static unsigned short motors_tricks[4];
+
+static unsigned char motor_state_get(unsigned char index)
+{
+    if (index == 0)
+        return P2OUT & BIT3;
+    else
+        return 0;
+}
+
+static void motor_state_set(unsigned char index, unsigned char up)
+{
+    if (up)
+    {
+        if (index == 0)
+            P2OUT |= BIT3;
+    }
+    else
+    {
+        if (index == 0)
+            P2OUT &= ~BIT3;
+    }
+}
+
+interrupt(TIMER0_A0_VECTOR) timer_a0_int(void)
+{
+    if (motor_state_get(motor_index))
+    {
+        motor_state_set(motor_index, 0);
+        TACCR0 = COUNTER_TO_2MS;
+    }
+    else
+    {
+        if (motors_tricks[motor_index] && motor_index == 0)//TODO remove "motor_index == 0" when add the other motors
+        {
+            motor_state_set(motor_index, 1);
+            TACCR0 = motors_tricks[motor_index];
+            return;
+        }
+        else
+            TACCR0 = COUNTER_TO_4MS;
+    }
+
+    motor_index++;
+    if (motor_index == 4)
+        motor_index = 0;
+}
 
 int motors_init(void)
 {
-    TACTL = TASSEL_2;//source of timerA = smlck
-    TACTL |= ID_3;//divide clock per 8, 1mhz/8 = 125000hz
-    TACTL |= MC_1;//up mode
+    //motors pins setup
+    P2DIR |= BIT3;//pin of motor fr in OUTUPT mode
+    P2OUT &= ~BIT3;//set pin to 0
 
+    motors_tricks[0] = 0;
+    motors_tricks[1] = 0;
+    motors_tricks[2] = 0;
+    motors_tricks[3] = 0;
+
+    TACTL = TASSEL_2 + MC_1 + ID_3;//smlck + up mode + /8
     TACCTL0 = CCIE;//enable interruption compare 1
-    TACCTL1 = CCIE;//enable interruption compare 2
-
-    TACCR0 = COUNTER_TO_5MS;
-    TACCR1 = 0;
+    TACCR0 = COUNTER_TO_2MS;
 
     return 0;
 }
 
-void motors_velocity_set(unsigned char fr, unsigned char fl, unsigned char br, unsigned char bl)
+static unsigned short _tricks_calc(unsigned char value)
 {
-    motors_tricks[0] = (COUNTER_TO_1MS * fr / 255) + COUNTER_TO_1MS - 1;
-    motors_tricks[1] = (COUNTER_TO_1MS * fl / 255) + COUNTER_TO_1MS - 1;
-    motors_tricks[2] = (COUNTER_TO_1MS * br / 255) + COUNTER_TO_1MS - 1;
-    motors_tricks[3] = (COUNTER_TO_1MS * bl / 255) + COUNTER_TO_1MS - 1;
+    if (!value)
+        return 0;
+    return ((COUNTER_TO_1MS_ * value) / 255) + COUNTER_TO_1MS_;
 }
 
-static int _power_calc(int count)
+/*
+ * 255 = 2ms up
+ * 1 = 1ms up
+ * 0 = motor turn off
+ */
+void motors_velocity_set(unsigned char fr, unsigned char fl, unsigned char br, unsigned char bl)
 {
-    count = count - COUNTER_TO_1MS + 1;
-    count = 255 * count / 125;
-    return count;
+    _tricks_calc(fr);
+    _tricks_calc(fl);
+    _tricks_calc(br);
+    _tricks_calc(bl);
+}
+
+static unsigned char _power_calc(unsigned short count)
+{
+    if (!count)
+        return 0;
+    return ((count - COUNTER_TO_1MS_) * 255) / COUNTER_TO_1MS_;
 }
 
 void motors_velocity_get(unsigned char *fr, unsigned char *fl, unsigned char *br, unsigned char *bl)
@@ -49,24 +112,4 @@ void motors_velocity_get(unsigned char *fr, unsigned char *fl, unsigned char *br
         *br = _power_calc(motors_tricks[2]);
     if (bl)
         *bl = _power_calc(motors_tricks[3]);
-}
-
-static void _motor_pwm_up(void)
-{
-    //TODO SET PIN UP
-    TACCR1 = motors_tricks[motor_index];
-}
-
-interrupt(TIMER0_A1_VECTOR) timer_a1_int(void)
-{
-    //TODO SET PIN DOWN
-}
-
-interrupt(TIMER0_A0_VECTOR) timer_a0_int(void)
-{
-    _motor_pwm_up();
-    motor_index++;
-    if(motor_index == 4)
-        motor_index = 0;
-    TACCR0 = COUNTER_TO_5MS;
 }

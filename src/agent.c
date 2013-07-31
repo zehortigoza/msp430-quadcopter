@@ -2,7 +2,7 @@
 
 #define COUNTER_500MS 62500
 
-static unsigned char z_value;
+static unsigned char z_value = 0;
 static int timer = 0;
 
 static void _timer_b_config(void)
@@ -44,9 +44,7 @@ static void _msg_cb(Protocol_Msg_Type type, char request, ...)
         case MOVE:
         {
             Protocol_Axis axis;
-            int num;
-
-            _timer_b_reset();
+            unsigned char num;
 
             axis = va_arg(ap, Protocol_Axis);
             num = va_arg(ap, int);
@@ -55,7 +53,6 @@ static void _msg_cb(Protocol_Msg_Type type, char request, ...)
             {
                 case AXIS_Z:
                 {
-                    //num [0-255]
                     z_value = num;
                     motors_velocity_set(z_value, z_value, z_value, z_value);
                     break;
@@ -116,6 +113,7 @@ static void _msg_cb(Protocol_Msg_Type type, char request, ...)
             }
 
             protocol_msg_send(type, 0);
+            _timer_b_reset();
             break;
         }
         case PING:
