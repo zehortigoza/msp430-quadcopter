@@ -31,11 +31,15 @@ unsigned char radio_send(char *txt)
 {
     if (strlen(txt) > MAX_STRING)
         return 0;
+
     if (tx_ptr)
     {
-        if (tx_next)
-            return 0;
-        tx_next = strdup(txt);
+        if (!tx_next)
+        {
+            tx_next = strdup(txt);
+            return 1;
+        }
+        return 0;
     }
 
     sprintf(tx_buffer, "%s", txt);
