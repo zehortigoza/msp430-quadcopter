@@ -25,6 +25,8 @@ void radio_init(radio_data_callback func)
     UCA0MCTL = UCBRS0;//modulation
     UCA0CTL1 &= ~UCSWRST;//initialize USCI state machine
     IE2 |= UCA0RXIE + UCA0TXIE;//enable rx interrupt
+
+    radio_send("init\n");//open tcp connection, this avoid trash been send
 }
 
 unsigned char radio_send(char *txt)
