@@ -77,7 +77,7 @@ void procotol_init(protocol_msg_callback cb)
     protocol_msg_func = cb;
 }
 
-int protocol_msg_send(Protocol_Msg_Type type, char request, ...)
+unsigned char protocol_msg_send(Protocol_Msg_Type type, char request, ...)
 {
     char tx_buffer[MAX_STRING];
     va_list ap;

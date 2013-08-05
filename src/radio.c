@@ -27,7 +27,7 @@ void radio_init(radio_data_callback func)
     IE2 |= UCA0RXIE + UCA0TXIE;//enable rx interrupt
 }
 
-int radio_send(char *txt)
+unsigned char radio_send(char *txt)
 {
     if (strlen(txt) > MAX_STRING)
         return 0;
