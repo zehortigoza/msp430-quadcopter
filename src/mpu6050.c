@@ -42,7 +42,7 @@ typedef union _mpu6050_raw
       int x_accel;
       int y_accel;
       int z_accel;
-      int temperature;
+      int temperature;//indicate that is first run of calibrate
       int x_gyro;
       int y_gyro;
       int z_gyro;
@@ -195,19 +195,14 @@ static void _raw_cb(unsigned char reg, unsigned char *data)
             raw_offset.value.x_gyro = (raw_offset.value.x_gyro + raw.value.x_gyro)/2;
             raw_offset.value.y_gyro = (raw_offset.value.y_gyro + raw.value.y_gyro)/2;
             raw_offset.value.z_gyro = (raw_offset.value.z_gyro + raw.value.z_gyro)/2;
-
-            _offset_remove(&raw);
         }
 
         calibrate--;
         if (!calibrate)
             protocol_msg_send(CALIBRATE, 0);
     }
-    else
-    {
-        _offset_remove(&raw);
-    }
 
+    _offset_remove(&raw);
     _scale_calc(&raw);
 
     //TODO transform to pitch, yaw and row
@@ -232,7 +227,7 @@ interrupt(PORT2_VECTOR) mpu_int(void)
 void mpu6050_calibrate(void)
 {
     calibrate = SAMPLES_TO_CALIBRATE;
-    raw_offset.value.temperature = -1;//indicate that is first run of calibrate
+    raw_offset.value.temperature = -1;
 }
 
 void mpu6050_gyro_get(float *x, float *y, float *z)

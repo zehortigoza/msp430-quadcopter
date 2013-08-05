@@ -5,6 +5,12 @@
 static unsigned char z_value = 0;
 static int timer = 0;
 
+/**
+ * BIT0 = already calibrate
+ */
+static unsigned char flags = 0;
+#define ALREADY_CALIBRATED BIT0
+
 static void _timer_b_config(void)
 {
     //config timer B
@@ -170,11 +176,14 @@ void agent_init(void)
 
 interrupt(TIMER1_A0_VECTOR) timer_b0_int(void)
 {
-    if (timer == 10)
+    if (!(flags & ALREADY_CALIBRATED) && timer == 10)
+    {
         mpu6050_calibrate();
+        flags |= ALREADY_CALIBRATED;
+    }
     timer++;
 
-    //remove moviments
+    //remove movements
     motors_velocity_set(z_value, z_value, z_value, z_value);
     TA1CCR0 = COUNTER_500MS;
 }
